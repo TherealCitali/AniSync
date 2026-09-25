@@ -117,6 +117,7 @@ import com.anisync.android.presentation.navigation.Library
 import com.anisync.android.presentation.navigation.MediaDetails
 import com.anisync.android.presentation.navigation.Profile
 import com.anisync.android.presentation.navigation.SettingsSponsors
+import com.anisync.android.presentation.navigation.navigateSafely
 import com.anisync.android.presentation.util.LocalAdaptiveInfo
 import com.anisync.android.presentation.util.LocalMainNavBarInset
 import com.anisync.android.presentation.util.LocalMainNavBarSuppressor
