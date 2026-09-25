@@ -239,8 +239,8 @@ class AppSettings @Inject constructor(
 
     private fun readNavBarStyle(): NavBarStyle {
         val name = runCatching { prefs.getString(KEY_NAV_BAR_STYLE, null) }.getOrNull()
-        return runCatching { NavBarStyle.valueOf(name ?: NavBarStyle.ANCHORED.name) }
-            .getOrDefault(NavBarStyle.ANCHORED)
+        return runCatching { NavBarStyle.valueOf(name ?: NavBarStyle.FLOATING.name) }
+            .getOrDefault(NavBarStyle.FLOATING)
     }
     
     // Notifications setting

@@ -282,6 +282,23 @@ fun DiscoverScreen(
         }
     }
 
+    LaunchedEffect(searchBarState) {
+        snapshotFlow { searchBarState.currentValue }
+            .collect { value ->
+                if (value == SearchBarValue.Collapsed) {
+                    textFieldState.clearText()
+                    viewModel.onAction(DiscoverAction.OnSearchActiveChange(false))
+                }
+            }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            textFieldState.clearText()
+            viewModel.onAction(DiscoverAction.OnSearchActiveChange(false))
+        }
+    }
+
     val onSearchItemClick: (Int) -> Unit = remember(navigateToMediaDetails, searchBarState, coroutineScope, keyboardController) {
         { id ->
             keyboardController?.hide()

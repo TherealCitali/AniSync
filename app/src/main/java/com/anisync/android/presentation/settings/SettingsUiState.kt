@@ -125,7 +125,7 @@ data class SettingsUiState(
     val coverQuality: CoverQuality = CoverQuality.LARGE,
     val hapticEnabled: Boolean = true,
     val appLockEnabled: Boolean = false,
-    val navBarStyle: NavBarStyle = NavBarStyle.ANCHORED,
+    val navBarStyle: NavBarStyle = NavBarStyle.FLOATING,
     val navBarShowLabels: Boolean = true,
     val navBarDoubleTapSearch: Boolean = true,
     val navBarCornerRadius: Float = 28f,

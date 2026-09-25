@@ -57,7 +57,16 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -132,6 +141,64 @@ private data class BottomNavItem<T : Any>(
      */
     val persistKey: String? = null
 )
+
+/** Primary items displayed in the capsule bottom bar: Library, Search (Discover), Profile. */
+@Composable
+private fun rememberPrimaryNavItems(): List<BottomNavItem<*>> = remember {
+    listOf(
+        BottomNavItem(
+            R.string.nav_library,
+            Library,
+            Library::class,
+            MainTab.LIBRARY,
+            Icons.Filled.VideoLibrary,
+            Icons.Outlined.VideoLibrary,
+            persistKey = "library"
+        ),
+        BottomNavItem(
+            R.string.nav_discover,
+            Discover,
+            Discover::class,
+            MainTab.DISCOVER,
+            Icons.Filled.Explore,
+            Icons.Outlined.Explore,
+            persistKey = "discover"
+        ),
+        BottomNavItem(
+            R.string.nav_profile,
+            Profile,
+            Profile::class,
+            MainTab.PROFILE,
+            Icons.Filled.Person,
+            Icons.Outlined.Person
+        )
+    )
+}
+
+/** Secondary items accessible via the More FAB speed-dial menu: Feed, Forum. */
+@Composable
+private fun rememberMoreNavItems(): List<BottomNavItem<*>> = remember {
+    listOf(
+        BottomNavItem(
+            R.string.nav_feed,
+            Feed,
+            Feed::class,
+            MainTab.FEED,
+            Icons.Filled.DynamicFeed,
+            Icons.Outlined.DynamicFeed,
+            persistKey = "feed"
+        ),
+        BottomNavItem(
+            R.string.nav_forum,
+            Forum,
+            Forum::class,
+            MainTab.FORUM,
+            Icons.Filled.Forum,
+            Icons.Outlined.Forum,
+            persistKey = "forum"
+        )
+    )
+}
 
 /**
  * The five top-level destinations, shared by every navigation container (bottom bar, rail) so the
@@ -529,10 +596,12 @@ private fun MainBottomBar(
     onTabTapped: (MainTab, Boolean) -> Unit,
     onTabSearch: (MainTab) -> Unit
 ) {
-    val navItems = rememberMainNavItems()
+    val primaryItems = rememberPrimaryNavItems()
+    val moreItems = rememberMoreNavItems()
 
     val navBackStackEntryState = navController.currentBackStackEntryAsState()
     val navBarSuppressor = LocalMainNavBarSuppressor.current
+    val currentDestination = navBackStackEntryState.value?.destination
 
     val isBottomBarVisible by remember(navBarSuppressor) {
         derivedStateOf {
@@ -545,6 +614,11 @@ private fun MainBottomBar(
             onWhitelistedRoute && navBarSuppressor?.isSuppressed != true
         }
     }
+
+    var showMoreMenu by remember { mutableStateOf(false) }
+
+    val activeMoreItem = moreItems.firstOrNull { currentDestination?.hasRoute(it.routeClass) == true }
+    val isMoreActive = activeMoreItem != null
 
     val motionScheme = MaterialTheme.motionScheme
 
@@ -573,56 +647,138 @@ private fun MainBottomBar(
         enter = enterAnim,
         exit = exitAnim
     ) {
-        CompactNavBar(style = style, cornerRadius = cornerRadius) {
-            val currentDestination = navBackStackEntryState.value?.destination
+        Box(contentAlignment = Alignment.BottomEnd) {
+            AnimatedVisibility(
+                visible = showMoreMenu,
+                enter = fadeIn() + scaleIn(transformOrigin = TransformOrigin(0.9f, 0.9f)),
+                exit = fadeOut() + scaleOut(transformOrigin = TransformOrigin(0.9f, 0.9f)),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(
+                        end = 16.dp,
+                        bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 68.dp
+                    )
+            ) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 6.dp,
+                    shadowElevation = 8.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .width(160.dp)
+                            .padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        moreItems.forEach { item ->
+                            val isSelected = currentDestination?.hasRoute(item.routeClass) == true
+                            val itemTitle = stringResource(item.titleResId)
+                            val iconVector = if (isSelected) item.selectedIcon else item.unselectedIcon
 
-            navItems.forEach { item ->
-                val isSelected = currentDestination?.hasRoute(item.routeClass) == true
-                val isProfile = item.routeClass == Profile::class
-                val showBadge = isProfile && unreadNotificationCount > 0
-                val iconVector =
-                    if (isSelected) item.selectedIcon else item.unselectedIcon
-                val itemTitle = stringResource(item.titleResId)
-
-                CompactNavBarItem(
-                    selected = isSelected,
-                    onClick = {
-                        // Every tap reaches the handler, since both taps of the double-tap
-                        // shortcut count whether or not they land on the open tab.
-                        if (!isSelected) {
-                            navController.navigateToMainTab(item.route, item.persistKey, onTabSelected)
+                            Surface(
+                                onClick = {
+                                    showMoreMenu = false
+                                    if (!isSelected) {
+                                        navController.navigateToMainTab(item.route, item.persistKey, onTabSelected)
+                                    }
+                                    onTabTapped(item.tab, isSelected)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = iconVector,
+                                        contentDescription = itemTitle,
+                                        tint = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = itemTitle,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
                         }
-                        onTabTapped(item.tab, isSelected)
-                    },
-                    modifier = tabSearchActionModifier(item.tab, itemTitle, onTabSearch),
-                    icon = {
-                        Icon(
-                            imageVector = iconVector,
-                            contentDescription = itemTitle
-                        )
-                    },
-                    label = {
-                        Text(
-                            text = itemTitle,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    showLabel = showLabels,
-                    badge = if (showBadge) {
-                        {
-                            ProfileNavBarIconWithBadge(
-                                iconVector = iconVector,
-                                title = itemTitle,
-                                unreadCount = unreadNotificationCount,
-                                isSelected = isSelected
+                    }
+                }
+            }
+
+            CompactNavBar(
+                style = style,
+                cornerRadius = cornerRadius,
+                fabContent = {
+                    Surface(
+                        onClick = { showMoreMenu = !showMoreMenu },
+                        shape = CircleShape,
+                        color = if (isMoreActive) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        tonalElevation = 4.dp,
+                        shadowElevation = 6.dp,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = activeMoreItem?.selectedIcon ?: Icons.Filled.MoreHoriz,
+                                contentDescription = "More Tabs",
+                                tint = if (isMoreActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                    } else null
-                )
+                    }
+                }
+            ) {
+                primaryItems.forEach { item ->
+                    val isSelected = currentDestination?.hasRoute(item.routeClass) == true
+                    val isProfile = item.routeClass == Profile::class
+                    val showBadge = isProfile && unreadNotificationCount > 0
+                    val iconVector = if (isSelected) item.selectedIcon else item.unselectedIcon
+                    val itemTitle = stringResource(item.titleResId)
+
+                    CompactNavBarItem(
+                        selected = isSelected,
+                        onClick = {
+                            if (showMoreMenu) showMoreMenu = false
+                            if (!isSelected) {
+                                navController.navigateToMainTab(item.route, item.persistKey, onTabSelected)
+                            }
+                            onTabTapped(item.tab, isSelected)
+                        },
+                        modifier = tabSearchActionModifier(item.tab, itemTitle, onTabSearch),
+                        icon = {
+                            Icon(
+                                imageVector = iconVector,
+                                contentDescription = itemTitle
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = itemTitle,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        showLabel = showLabels,
+                        badge = if (showBadge) {
+                            {
+                                ProfileNavBarIconWithBadge(
+                                    iconVector = iconVector,
+                                    title = itemTitle,
+                                    unreadCount = unreadNotificationCount,
+                                    isSelected = isSelected
+                                )
+                            }
+                        } else null
+                    )
+                }
             }
         }
     }

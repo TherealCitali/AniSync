@@ -222,7 +222,23 @@ class DiscoverViewModel @Inject constructor(
 
     private fun onSearchActiveChange(active: Boolean) {
         val currentState = _uiState.value
-        _uiState.update { currentState.copy(isSearchActive = active) }
+        _uiState.update {
+            if (!active) {
+                currentState.copy(
+                    isSearchActive = false,
+                    searchQuery = "",
+                    searchFilters = SearchFilters(),
+                    searchAnime = emptyList(),
+                    searchManga = emptyList(),
+                    groupedResults = GroupedSearchResults()
+                )
+            } else {
+                currentState.copy(isSearchActive = true)
+            }
+        }
+        if (!active) {
+            searchTrigger.value = SearchTriggerState("", SearchFilters().hashCode())
+        }
     }
 
     private fun onSearch(query: String) {
