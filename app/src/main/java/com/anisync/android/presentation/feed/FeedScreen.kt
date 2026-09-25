@@ -113,14 +113,8 @@ fun FeedScreen(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
-            // Offset above the main bottom nav bar using the real insets — the system
-            // navigation inset (gesture/3-button) plus the bar's own height — instead
-            // of a fixed dp. A hardcoded value overlapped the bar on devices with a
-            // taller gesture inset / edge-to-edge enforcement (e.g. Android 16). (#34)
             Box(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(bottom = LocalMainNavBarInset.current)
+                modifier = Modifier.padding(bottom = LocalMainNavBarInset.current + 8.dp)
             ) {
                 if (!hasRail) {
                     FloatingActionButton(

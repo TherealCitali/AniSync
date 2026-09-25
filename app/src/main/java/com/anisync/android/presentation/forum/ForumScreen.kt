@@ -343,9 +343,7 @@ fun ForumScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
             Box(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(bottom = LocalMainNavBarInset.current)
+                modifier = Modifier.padding(bottom = LocalMainNavBarInset.current + 8.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.End,

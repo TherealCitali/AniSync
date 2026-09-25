@@ -6,7 +6,6 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +36,7 @@ import com.anisync.android.data.NavBarStyle
 /**
  * Custom compact capsule bottom navigation bar.
  * Supports:
- *  - Floating capsule pill container (port from LastWave / modern capsule bar)
+ *  - Compact floating capsule pill container (port from LastWave / modern capsule bar)
  *  - Active item expansion containing Icon + Label inside the capsule pill
  *  - Slot for Floating Action Button (More tabs FAB port from ArchiveTune)
  */
@@ -61,13 +60,12 @@ fun CompactNavBar(
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        bottom = systemBarInsets.calculateBottomPadding() + 10.dp,
+                        bottom = systemBarInsets.calculateBottomPadding() + 8.dp,
                         top = 4.dp
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -75,15 +73,12 @@ fun CompactNavBar(
                         color = MaterialTheme.colorScheme.surfaceContainerHigh,
                         shape = RoundedCornerShape(32.dp),
                         tonalElevation = 4.dp,
-                        shadowElevation = 8.dp,
-                        modifier = Modifier.weight(1f)
+                        shadowElevation = 8.dp
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 8.dp),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                             content = content
                         )
                     }
@@ -110,7 +105,7 @@ fun CompactNavBar(
                             bottom = systemBarInsets.calculateBottomPadding() + 12.dp
                         ),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                     content = content
                 )
             }
@@ -161,39 +156,34 @@ fun RowScope.CompactNavBarItem(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    Box(
-        modifier = modifier
-            .weight(if (selected) 1.3f else 1f)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
+    Surface(
+        onClick = onClick,
+        interactionSource = interactionSource,
+        indication = null,
+        color = indicatorColor,
+        shape = RoundedCornerShape(percent = 50),
+        modifier = modifier.height(44.dp)
     ) {
-        Surface(
-            color = indicatorColor,
-            shape = RoundedCornerShape(percent = 50),
-            modifier = Modifier.height(44.dp)
+        Row(
+            modifier = Modifier.padding(
+                horizontal = if (selected) 16.dp else 12.dp,
+                vertical = 8.dp
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                CompositionLocalProvider(LocalContentColor provides iconTint) {
-                    Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                        if (badge != null) badge() else icon()
-                    }
+            CompositionLocalProvider(LocalContentColor provides iconTint) {
+                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                    if (badge != null) badge() else icon()
                 }
-                AnimatedVisibility(
-                    visible = selected && showLabel,
-                    enter = expandHorizontally(expandFrom = Alignment.Start) + fadeIn(),
-                    exit = shrinkHorizontally(shrinkTowards = Alignment.Start) + fadeOut()
-                ) {
-                    CompositionLocalProvider(LocalContentColor provides labelColor) {
-                        label()
-                    }
+            }
+            AnimatedVisibility(
+                visible = selected && showLabel,
+                enter = expandHorizontally(expandFrom = Alignment.Start) + fadeIn(),
+                exit = shrinkHorizontally(shrinkTowards = Alignment.Start) + fadeOut()
+            ) {
+                CompositionLocalProvider(LocalContentColor provides labelColor) {
+                    label()
                 }
             }
         }
