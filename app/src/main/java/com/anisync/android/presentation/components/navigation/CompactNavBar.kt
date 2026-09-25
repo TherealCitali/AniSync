@@ -159,7 +159,6 @@ fun RowScope.CompactNavBarItem(
     Surface(
         onClick = onClick,
         interactionSource = interactionSource,
-        indication = null,
         color = indicatorColor,
         shape = RoundedCornerShape(percent = 50),
         modifier = modifier.height(44.dp)
