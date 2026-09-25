@@ -117,27 +117,6 @@ import com.anisync.android.presentation.navigation.Library
 import com.anisync.android.presentation.navigation.MediaDetails
 import com.anisync.android.presentation.navigation.Profile
 import com.anisync.android.presentation.navigation.SettingsSponsors
-import com.anisync.android.presentation.navigation.navigateSafely
-import kotlin.reflect.KClass
-import com.anisync.android.presentation.components.alert.LocalRateLimitMonitor
-import com.anisync.android.presentation.components.alert.ProvideToastManager
-import com.anisync.android.presentation.components.alert.RateLimitNotice
-import com.anisync.android.presentation.components.alert.TopToastHost
-import com.anisync.android.presentation.components.navigation.CompactNavBar
-import com.anisync.android.presentation.components.navigation.CompactNavBarItem
-import com.anisync.android.presentation.navigation.AniSyncNavHost
-import com.anisync.android.presentation.navigation.Discover
-import com.anisync.android.presentation.navigation.navigateSafely
-import com.anisync.android.presentation.navigation.Feed
-import com.anisync.android.presentation.navigation.Forum
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.semantics
-import com.anisync.android.domain.MainTab
-import com.anisync.android.presentation.navigation.Library
-import com.anisync.android.presentation.navigation.MediaDetails
-import com.anisync.android.presentation.navigation.Profile
-import com.anisync.android.presentation.navigation.SettingsSponsors
 import com.anisync.android.presentation.util.LocalAdaptiveInfo
 import com.anisync.android.presentation.util.LocalMainNavBarInset
 import com.anisync.android.presentation.util.LocalMainNavBarSuppressor
@@ -145,7 +124,6 @@ import com.anisync.android.presentation.util.LocalRailFabState
 import com.anisync.android.presentation.util.MainNavBarSuppressor
 import com.anisync.android.presentation.util.RailFab
 import com.anisync.android.presentation.util.RailFabState
-import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
 private data class BottomNavItem<T : Any>(
