@@ -154,10 +154,18 @@ android {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
             } else {
-                storeFile = file(System.getenv("KEYSTORE_FILE") ?: "release.keystore")
-                storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
+                val envStoreFile = System.getenv("KEYSTORE_FILE")
+                val appReleaseKs = file("release.keystore")
+                val fallbackKs = rootProject.file("keystore/anisync-release.p12")
+                storeFile = when {
+                    !envStoreFile.isNullOrBlank() && file(envStoreFile).exists() -> file(envStoreFile)
+                    appReleaseKs.exists() -> appReleaseKs
+                    fallbackKs.exists() -> fallbackKs
+                    else -> file(envStoreFile ?: "release.keystore")
+                }
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "anisync-release"
+                keyAlias = System.getenv("KEY_ALIAS") ?: "anisync"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: "anisync-release"
             }
         }
     }

@@ -30,7 +30,15 @@ jobs:
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
-          echo $SIGNING_KEY | base64 -d > ./app/release.keystore
+          if [ -n "$SIGNING_KEY" ]; then
+            echo "$SIGNING_KEY" | base64 -d > ./app/release.keystore
+          elif [ -f ./keystore/anisync-release.p12 ]; then
+            echo "Using repository release keystore"
+            cp ./keystore/anisync-release.p12 ./app/release.keystore
+          else
+            echo "No keystore available" >&2
+            exit 1
+          fi
 
       - name: Build Release APK
         env:
